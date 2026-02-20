@@ -40,6 +40,9 @@ export class StartScene {
     constructor(game) {
         this.game = game
         this._diffBtns = []
+        this._rankBtn = null
+        this._rankCloseBtn = null
+        this._showRankModal = false
     }
 
     update() { /* 无需逐帧逻辑 */ }
@@ -143,11 +146,67 @@ export class StartScene {
 
             this._diffBtns.push({ key: d.key, x: bx, y: by, w: bw, h: bh })
         })
+
+        // ―― 好友排行榜按途 ――――――――――――――――――――――――――――――――――
+        const rankBtnY = startY + 2 * (bh + gap * 0.8) + h * 0.02
+        const rankBtnH = h * 0.065
+        const rankBtnX = w * 0.15
+        const rankBtnW = w * 0.70
+        ctx.fillStyle = '#0f3460'
+        ctx.beginPath()
+        ctx.roundRect(rankBtnX, rankBtnY, rankBtnW, rankBtnH, 12)
+        ctx.fill()
+        ctx.fillStyle = '#7ab8f0'
+        ctx.font = `bold ${w * 0.040}px Arial`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('🏆 好友排行榜', w / 2, rankBtnY + rankBtnH / 2)
+        this._rankBtn = { x: rankBtnX, y: rankBtnY, w: rankBtnW, h: rankBtnH }
+
+        // 排行榜弹窗
+        if (this._showRankModal) {
+            this._renderRankModal(ctx, w, h)
+        }
     }
 
     onTouchEnd(e) {
         const touch = e.changedTouches[0]
         const tx = touch.clientX, ty = touch.clientY
+        const { w: sw, h: sh } = { w: this.game.screenWidth, h: this.game.screenHeight }
+
+        // 弹窗关闭按途
+        if (this._showRankModal && this._rankCloseBtn) {
+            const cb = this._rankCloseBtn
+            if (tx >= cb.x && tx <= cb.x + cb.w && ty >= cb.y && ty <= cb.y + cb.h) {
+                this._showRankModal = false
+                return
+            }
+            // 点击弹窗外面关闭
+            const mw = sw * 0.90, mh = sh * 0.65
+            const mx = (sw - mw) / 2, my = (sh - mh) / 2
+            if (!(tx >= mx && tx <= mx + mw && ty >= my && ty <= my + mh)) {
+                this._showRankModal = false
+            }
+            return
+        }
+
+        // 排行榜按途
+        if (this._rankBtn) {
+            const rb = this._rankBtn
+            if (tx >= rb.x && tx <= rb.x + rb.w && ty >= rb.y && ty <= rb.y + rb.h) {
+                this._showRankModal = true
+                if (this.game.openDataContext) {
+                    this.game.openDataContext.postMessage({
+                        type: 'render',
+                        width: sw,
+                        height: Math.round(sh * 0.52),
+                    })
+                }
+                return
+            }
+        }
+
+        // 难度按途
         for (const btn of this._diffBtns) {
             if (tx >= btn.x && tx <= btn.x + btn.w && ty >= btn.y && ty <= btn.y + btn.h) {
                 const { GameScene } = require('./GameScene')
@@ -155,5 +214,60 @@ export class StartScene {
                 return
             }
         }
+    }
+
+    _renderRankModal(ctx, w, h) {
+        const mw = w * 0.90
+        const mh = h * 0.65
+        const mx = (w - mw) / 2
+        const my = (h - mh) / 2
+
+        // 半透明遗挡层
+        ctx.fillStyle = 'rgba(0,0,0,0.72)'
+        ctx.fillRect(0, 0, w, h)
+
+        // 弹窗背景
+        ctx.fillStyle = '#1a1a3a'
+        ctx.beginPath()
+        ctx.roundRect(mx, my, mw, mh, 16)
+        ctx.fill()
+
+        // 弹窗标题
+        ctx.fillStyle = '#e94560'
+        ctx.font = `bold ${w * 0.048}px Arial`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('🏆 好友排行榜', w / 2, my + h * 0.048)
+
+        // 开放数据域画布
+        const rankY = my + h * 0.09
+        const rankH = mh - h * 0.13
+        const rankW = mw
+        if (this.game.openDataContext) {
+            try {
+                ctx.drawImage(this.game.openDataContext.canvas, mx, rankY, rankW, rankH)
+            } catch (e) {
+                ctx.fillStyle = '#444466'
+                ctx.font = `${w * 0.032}px Arial`
+                ctx.fillText('提示：关系链功能需在真机上运行', w / 2, rankY + rankH / 2)
+            }
+        } else {
+            ctx.fillStyle = '#444466'
+            ctx.font = `${w * 0.032}px Arial`
+            ctx.fillText('关系链功能不可用', w / 2, rankY + rankH / 2)
+        }
+
+        // 关闭按途
+        const cbW = w * 0.32, cbH = h * 0.052
+        const cbX = (w - cbW) / 2
+        const cbY = my + mh - cbH - h * 0.015
+        ctx.fillStyle = '#2a2a4a'
+        ctx.beginPath()
+        ctx.roundRect(cbX, cbY, cbW, cbH, 10)
+        ctx.fill()
+        ctx.fillStyle = '#888899'
+        ctx.font = `${w * 0.036}px Arial`
+        ctx.fillText('关闭', w / 2, cbY + cbH / 2)
+        this._rankCloseBtn = { x: cbX, y: cbY, w: cbW, h: cbH }
     }
 }

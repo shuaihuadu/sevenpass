@@ -125,9 +125,12 @@ export class GameScene {
         this.currentLevel = 1
         this.totalScore = 0
         this.feedbackTimer = 0
+        this.isNewBest = false
         this.lastTime = Date.now()
         this._sayBtn = null
         this._passBtn = null
+        this._shareBtn = null
+        this._homeBtn = null
         this.failLines = []
         this.failNumber = 0
         this.initLevel(1)
@@ -184,7 +187,12 @@ export class GameScene {
     _doGameOver() {
         const key = 'best_' + DIFFICULTY_CONFIG[this.difficulty].key
         const best = loadData(key, 0)
-        if (this.totalScore > best) saveData(key, this.totalScore)
+        this.isNewBest = this.totalScore > best
+        if (this.isNewBest) saveData(key, this.totalScore)
+        // 提交分数到开放数据域（排行榜）
+        if (this.game.openDataContext) {
+            this.game.openDataContext.postMessage({ type: 'setScore', score: this.totalScore })
+        }
         this.state = 'gameOver'
     }
 
@@ -418,11 +426,50 @@ export class GameScene {
 
         const key = 'best_' + DIFFICULTY_CONFIG[this.difficulty].key
         const best = loadData(key, 0)
-        ctx.fillStyle = '#555577'
-        ctx.font = `${w * 0.028}px Arial`
-        ctx.fillText(`[${DIFFICULTY_CONFIG[this.difficulty].label}] 最高分：${best}`, w / 2, scoreY + h * 0.055)
+        const displayBest = this.isNewBest ? this.totalScore : best
 
-        this._drawBtn(ctx, w, h * 0.86, '返回首页', '#0d4f8c')
+        if (this.isNewBest) {
+            // 新纪录金色高亮
+            ctx.fillStyle = '#f0c040'
+            ctx.font = `bold ${w * 0.048}px Arial`
+            ctx.fillText(`🏆 新纪录！${displayBest} 分`, w / 2, scoreY + h * 0.055)
+        } else {
+            ctx.fillStyle = '#555577'
+            ctx.font = `${w * 0.028}px Arial`
+            ctx.fillText(`[${DIFFICULTY_CONFIG[this.difficulty].label}] 最高分：${displayBest} 分`, w / 2, scoreY + h * 0.055)
+        }
+
+        // ── 底部三按钮区（纵向排列）────────────────────────────
+        const bw3 = w * 0.72, bh3 = 50
+        const bx3 = (w - bw3) / 2
+        const gap3 = h * 0.018
+        const by3Start = h * 0.73
+
+        // 📣 挑战好友（橙红）
+        ctx.fillStyle = '#c0390b'
+        ctx.beginPath()
+        ctx.roundRect(bx3, by3Start, bw3, bh3, 25)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = `bold ${w * 0.044}px Arial`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('�️ 生成海报', w / 2, by3Start + 25)
+        this._shareBtn = { x: bx3, y: by3Start, w: bw3, h: bh3 }
+
+        // 返回首页（蓝）
+        const by3Home = by3Start + bh3 + gap3
+        ctx.fillStyle = '#0d4f8c'
+        ctx.beginPath()
+        ctx.roundRect(bx3, by3Home, bw3, bh3, 25)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = `bold ${w * 0.044}px Arial`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('返回首页', w / 2, by3Home + 25)
+        this._homeBtn = { x: bx3, y: by3Home, w: bw3, h: bh3 }
+
     }
 
     _drawBtn(ctx, w, y, label, color) {
@@ -449,8 +496,14 @@ export class GameScene {
             return
         }
         if (this.state === 'gameOver') {
-            const { StartScene } = require('./StartScene')
-            this.game.loadScene(new StartScene(this.game))
+            if (this._shareBtn && this._hit(tx, ty, this._shareBtn)) {
+                this._sharePoster()
+                return
+            }
+            if (this._homeBtn && this._hit(tx, ty, this._homeBtn)) {
+                const { StartScene } = require('./StartScene')
+                this.game.loadScene(new StartScene(this.game))
+            }
             return
         }
         if (this.state !== 'playing') return
@@ -462,4 +515,131 @@ export class GameScene {
     _hit(x, y, r) {
         return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h
     }
+
+    _buildShareContent() {
+        const cfg = DIFFICULTY_CONFIG[this.difficulty]
+        const score = this.totalScore
+        const title = `我在玩逢7过，${cfg.label}难度获得了 ${score} 分，你看看你行吗？`
+        const desc = `「逢7过」遇到含7或7的倍数就「过」，反应慢了就输！快来挑战！`
+        return { title, desc }
+    }
+
+    _sharePoster() {
+        wx.showLoading({ title: '生成海报…', mask: true })
+        let offCanvas
+        try {
+            offCanvas = wx.createOffscreenCanvas({ type: '2d', width: 750, height: 1080 })
+        } catch (e) {
+            wx.hideLoading()
+            const { title, desc } = this._buildShareContent()
+            wx.shareAppMessage({ title, desc })
+            return
+        }
+        const ctx = offCanvas.getContext('2d')
+        const cfg = DIFFICULTY_CONFIG[this.difficulty]
+        const score = this.totalScore
+        const level = this.currentLevel
+        const best = loadData('best_' + cfg.key, 0)
+        const displayBest = this.isNewBest ? score : best
+        const PW = 750, PH = 1080
+
+        // 背景
+        ctx.fillStyle = '#0d0d1e'
+        ctx.fillRect(0, 0, PW, PH)
+
+        // 装饰圆
+        ctx.beginPath()
+        ctx.arc(PW * 0.12, PH * 0.06, PW * 0.22, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(233,69,96,0.10)'
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(PW * 0.92, PH * 0.90, PW * 0.28, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(15,52,96,0.28)'
+        ctx.fill()
+
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+
+        // 标题
+        ctx.fillStyle = '#e94560'
+        ctx.font = 'bold 110px Arial'
+        ctx.fillText('逢7过', PW / 2, PH * 0.13)
+
+        // 副标题
+        ctx.fillStyle = '#444466'
+        ctx.font = '32px Arial'
+        ctx.fillText('WeChat 小游戏', PW / 2, PH * 0.21)
+
+        // 难度标签
+        ctx.fillStyle = '#0f3460'
+        ctx.fillRect(PW * 0.35, PH * 0.255, PW * 0.30, 56)
+        ctx.fillStyle = '#aaaacc'
+        ctx.font = '30px Arial'
+        ctx.fillText(cfg.label + ' 难度', PW / 2, PH * 0.255 + 28)
+
+        // 得分标签
+        ctx.fillStyle = '#666688'
+        ctx.font = '38px Arial'
+        ctx.fillText('本局得分', PW / 2, PH * 0.37)
+
+        // 分数数字
+        ctx.fillStyle = '#ffffff'
+        ctx.font = `bold ${score >= 1000 ? 150 : 190}px Arial`
+        ctx.fillText(String(score), PW / 2, PH * 0.49)
+
+        // 最高分 / 新纪录
+        if (this.isNewBest) {
+            ctx.fillStyle = '#f0c040'
+            ctx.font = 'bold 46px Arial'
+            ctx.fillText('🏆 新纪录！', PW / 2, PH * 0.61)
+        } else {
+            ctx.fillStyle = '#444466'
+            ctx.font = '36px Arial'
+            ctx.fillText(`历史最高 ${displayBest} 分`, PW / 2, PH * 0.61)
+        }
+
+        // 关数
+        ctx.fillStyle = '#555577'
+        ctx.font = '32px Arial'
+        ctx.fillText(`到达第 ${level} 关`, PW / 2, PH * 0.68)
+
+        // 分隔线
+        ctx.strokeStyle = '#1a1a3a'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(PW * 0.12, PH * 0.74)
+        ctx.lineTo(PW * 0.88, PH * 0.74)
+        ctx.stroke()
+
+        // 挑袖文字
+        ctx.fillStyle = '#e94560'
+        ctx.font = 'bold 44px Arial'
+        ctx.fillText('你看看你行吗？', PW / 2, PH * 0.80)
+
+        // 小程序入口提示
+        ctx.fillStyle = '#444466'
+        ctx.font = '28px Arial'
+        ctx.fillText('搜索小游戏「逢7过」来挑战', PW / 2, PH * 0.87)
+
+        // 底边色条
+        ctx.fillStyle = '#e94560'
+        ctx.fillRect(0, PH - 8, PW, 8)
+
+        offCanvas.toTempFilePath({
+            success(res) {
+                wx.hideLoading()
+                wx.showShareImageMenu({
+                    path: res.tempFilePath,
+                    fail() {
+                        wx.showToast({ title: '分享已取消', icon: 'none', duration: 1000 })
+                    },
+                })
+            },
+            fail() {
+                wx.hideLoading()
+                wx.showToast({ title: '海报生成失败', icon: 'none' })
+            },
+        })
+    }
+
 }

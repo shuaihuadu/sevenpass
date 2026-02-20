@@ -39,6 +39,13 @@ class Main {
         // 当前场景
         this.currentScene = null
 
+        // 开放数据域（好友排行榜）
+        try {
+            this.openDataContext = wx.getOpenDataContext()
+        } catch (e) {
+            this.openDataContext = null
+        }
+
         // 启动游戏
         this.init()
     }
@@ -65,6 +72,53 @@ class Main {
 
         // 加载开始场景
         this.loadScene(new StartScene(this))
+
+        // 评价推荐按钮（悬浮在右侧）
+        try {
+            const fb = wx.createFeedbackButton({
+                type: 'text',
+                text: '评价',
+                style: {
+                    left: this.screenWidth - 64,
+                    top: Math.round(this.screenHeight * 0.42),
+                    width: 56,
+                    height: 56,
+                    lineHeight: 56,
+                    backgroundColor: '#0f3460',
+                    color: '#7ab8f0',
+                    textAlign: 'center',
+                    fontSize: 13,
+                    borderRadius: 28,
+                },
+            })
+            fb.show()
+        } catch (e) { /* 环境不支持则静默跳过 */ }
+
+        // 注册系统级分享（右上角菜单 → 发送给朋友）
+        wx.onShareAppMessage(() => {
+            const scene = this.currentScene
+            if (scene && scene._buildShareContent) {
+                const { title, desc } = scene._buildShareContent()
+                return { title, desc }
+            }
+            return {
+                title: '「逢7过」— 你的反应速度够快吗？快来挑战！',
+                desc: '遇到含7或7的倍数就「过」，其他就「说」，简单？来试试！',
+            }
+        })
+
+        // 注册分享到朋友圈
+        wx.onShareTimeline(() => {
+            const scene = this.currentScene
+            if (scene && scene._buildShareContent) {
+                const { title } = scene._buildShareContent()
+                return { title, query: '' }
+            }
+            return {
+                title: '「逢7过」— 反应游戏，你能坚持几关？',
+                query: '',
+            }
+        })
 
         // 启动游戏循环
         this.loop()
