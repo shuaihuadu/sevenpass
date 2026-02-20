@@ -28,13 +28,20 @@ class Main {
             return this
         }
 
-        // 屏幕宽高
+
+        // 屏幕宽高和像素比，支持高清渲染
         const info = wx.getSystemInfoSync()
+        const pixelRatio = info.pixelRatio || 1
         this.screenWidth = info.windowWidth
         this.screenHeight = info.windowHeight
-
-        this.canvas.width = this.screenWidth
-        this.canvas.height = this.screenHeight
+        this.canvas.width = this.screenWidth * pixelRatio
+        this.canvas.height = this.screenHeight * pixelRatio
+        // 如有 styleWidth/styleHeight 属性可设置（部分平台支持）
+        if (this.canvas.style) {
+            this.canvas.style.width = this.screenWidth + 'px'
+            this.canvas.style.height = this.screenHeight + 'px'
+        }
+        this.ctx.scale(pixelRatio, pixelRatio)
 
         // 当前场景
         this.currentScene = null
