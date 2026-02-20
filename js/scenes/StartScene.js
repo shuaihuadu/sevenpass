@@ -30,7 +30,7 @@ const DIFFICULTIES = [
     {
         key: 'crazy',
         label: '疯狂',
-        desc: '随机大数字  含位数和规则',
+        desc: '随机数字  含位数和规则',
         color: '#3a006b',
         textColor: '#cc99ff',
     },

@@ -454,7 +454,7 @@ export class GameScene {
         ctx.font = `bold ${w * 0.044}px Arial`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText('�️ 生成海报', w / 2, by3Start + 25)
+        ctx.fillText('分享', w / 2, by3Start + 25)
         this._shareBtn = { x: bx3, y: by3Start, w: bw3, h: bh3 }
 
         // 返回首页（蓝）
@@ -525,7 +525,7 @@ export class GameScene {
     }
 
     _sharePoster() {
-        wx.showLoading({ title: '生成海报…', mask: true })
+        wx.showLoading({ title: '生成分享海报…', mask: true })
         let offCanvas
         try {
             offCanvas = wx.createOffscreenCanvas({ type: '2d', width: 750, height: 1080 })
