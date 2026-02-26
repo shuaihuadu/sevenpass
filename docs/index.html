@@ -278,7 +278,7 @@
         <div class="platform-en">Android 8.0+ (APK)</div>
         <a id="android-btn" href="#" class="btn btn-outline" target="_blank" rel="noopener"> 下载 APK</a>
         <div class="qr-wrap">
-          <canvas id="qr-android"></canvas>
+          <img src="assets/qr-android.png" width="140" height="140" alt="Android download QR code" />
           <span class="qr-label">扫码下载  Scan to download</span>
         </div>
       </div>
@@ -312,9 +312,7 @@
   QRCode.toCanvas(document.getElementById("qr-ios"), IOS_URL, {
     width: 140, margin: 1, color: { dark: "#1A1F2E", light: "#FFFFFF" }
   });
-  QRCode.toCanvas(document.getElementById("qr-android"), ANDROID_URL, {
-    width: 140, margin: 1, color: { dark: "#1A1F2E", light: "#FFFFFF" }
-  });
+  // Android QR code: static image (assets/qr-android.png)
 </script>
 
 </body>
