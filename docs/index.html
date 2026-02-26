@@ -1,767 +1,321 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>逢7过 · SevenPass</title>
-    <meta name="description" content="逢7过 — 一款考验反应力与专注力的数字游戏。SevenPass — A reflex & focus number game." />
-    <meta property="og:title" content="逢7过 · SevenPass" />
-    <meta property="og:description" content="能坚持多久？挑战你的反应极限。How long can you last?" />
-    <meta property="og:image" content="https://shuaihuadu.github.io/sevenpass/assets/og-image.png" />
-
-    <!-- QR Code library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
-    <style>
-        :root {
-            --bg: #1A1F2E;
-            --surface: #252D42;
-            --surface2: #293347;
-            --accent: #4099FF;
-            --gold: #F0C040;
-            --red: #E05252;
-            --text: #D9D9D9;
-            --text-dim: #8892AA;
-            --radius: 16px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
-            line-height: 1.6;
-        }
-
-        /* ─── NAV ─── */
-        nav {
-            position: sticky;
-            top: 0;
-            background: rgba(26, 31, 46, 0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            z-index: 100;
-            padding: 0 24px;
-        }
-
-        .nav-inner {
-            max-width: 960px;
-            margin: 0 auto;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .nav-logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text);
-            text-decoration: none;
-            letter-spacing: 0.02em;
-        }
-
-        .nav-logo span {
-            color: var(--accent);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--text);
-        }
-
-        /* ─── HERO ─── */
-        .hero {
-            text-align: center;
-            padding: 96px 24px 80px;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: rgba(64, 153, 255, 0.12);
-            color: var(--accent);
-            border: 1px solid rgba(64, 153, 255, 0.3);
-            border-radius: 999px;
-            padding: 4px 14px;
-            font-size: 13px;
-            margin-bottom: 24px;
-            letter-spacing: 0.04em;
-        }
-
-        .hero h1 {
-            font-size: clamp(40px, 8vw, 72px);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            margin-bottom: 12px;
-        }
-
-        .hero h1 .zh {
-            display: block;
-        }
-
-        .hero h1 .en {
-            display: block;
-            font-size: clamp(20px, 4vw, 36px);
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-top: 8px;
-        }
-
-        .hero-sub {
-            font-size: 18px;
-            color: var(--text-dim);
-            margin: 20px 0 40px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-sub .en-sub {
-            display: block;
-            font-size: 15px;
-            margin-top: 4px;
-        }
-
-        .hero-btns {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border-radius: 999px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: transform 0.15s, opacity 0.15s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text);
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-outline:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* ─── NUMBERS SHOWCASE ─── */
-        .numbers-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            padding: 0 24px 80px;
-        }
-
-        .num-chip {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 700;
-            background: var(--surface);
-        }
-
-        .num-chip.normal {
-            color: var(--text);
-        }
-
-        .num-chip.seven {
-            background: rgba(240, 192, 64, 0.15);
-            color: var(--gold);
-            border: 1.5px solid rgba(240, 192, 64, 0.4);
-        }
-
-        .num-chip.pass {
-            background: var(--accent);
-            color: #fff;
-            font-size: 16px;
-        }
-
-        /* ─── SECTION ─── */
-        section {
-            padding: 80px 24px;
-        }
-
-        .section-inner {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .section-tag {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            margin-bottom: 12px;
-        }
-
-        .section-title {
-            font-size: clamp(24px, 4vw, 36px);
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .section-title .en {
-            display: block;
-            font-size: clamp(14px, 2vw, 18px);
-            color: var(--text-dim);
-            font-weight: 400;
-            margin-top: 4px;
-        }
-
-        /* ─── RULES ─── */
-        #rules {
-            background: var(--surface);
-            border-radius: 0;
-        }
-
-        .rules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 24px;
-            margin-top: 40px;
-        }
-
-        .rule-card {
-            background: var(--bg);
-            border-radius: var(--radius);
-            padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .rule-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .rule-card h3 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .rule-card .rule-en {
-            font-size: 13px;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
-
-        .rule-card p {
-            font-size: 14px;
-            color: var(--text-dim);
-            line-height: 1.6;
-        }
-
-        /* ─── SCORING ─── */
-        .scoring-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 32px;
-        }
-
-        .score-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .score-badge {
-            min-width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .score-badge.normal {
-            background: rgba(217, 217, 217, 0.1);
-            color: var(--text);
-        }
-
-        .score-badge.bonus {
-            background: rgba(240, 192, 64, 0.15);
-            color: var(--gold);
-        }
-
-        .score-badge.wrong {
-            background: rgba(224, 82, 82, 0.15);
-            color: var(--red);
-        }
-
-        .score-content h4 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .score-content .en {
-            font-size: 13px;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-
-        .score-content p {
-            font-size: 14px;
-            color: var(--text-dim);
-        }
-
-        /* ─── SCREENSHOTS ─── */
-        .screenshots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 16px;
-
-            .screenshot-frame {
-                background: var(--surface);
-                border-radius: 24px;
-                overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                aspect-ratio: 9/19;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-direction: column;
-                gap: 8px;
-                color: var(--text-dim);
-                font-size: 13px;
-            }
-
-            .screenshot-frame img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: block;
-            }
-
-            .screenshot-frame .placeholder-icon {
-                font-size: 36px;
-            }
-
-            /* ─── DOWNLOAD ─── */
-            #download {
-                background: var(--surface);
-            }
-
-            .platforms {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 32px;
-                margin-top: 40px;
-            }
-
-            .platform-card {
-                background: var(--bg);
-                border-radius: var(--radius);
-                padding: 32px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                text-align: center;
-                transition: border-color 0.2s, transform 0.2s;
-            }
-
-            .platform-card:hover {
-                border-color: rgba(64, 153, 255, 0.4);
-                transform: translateY(-4px);
-            }
-
-            .platform-icon {
-                font-size: 48px;
-                margin-bottom: 16px;
-            }
-
-            .platform-card h3 {
-                font-size: 20px;
-                font-weight: 700;
-                margin-bottom: 4px;
-            }
-
-            .platform-card .platform-en {
-                font-size: 13px;
-                color: var(--text-dim);
-                margin-bottom: 20px;
-            }
-
-            .platform-card .btn {
-                font-size: 15px;
-                padding: 12px 24px;
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 24px;
-            }
-
-            .qr-wrap {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .qr-wrap canvas,
-            .qr-wrap img {
-                border-radius: 10px;
-                background: #fff;
-                padding: 8px;
-            }
-
-            .qr-label {
-                font-size: 12px;
-                color: var(--text-dim);
-            }
-
-            /* ─── FOOTER ─── */
-            footer {
-                border-top: 1px solid rgba(255, 255, 255, 0.06);
-                padding: 40px 24px;
-                text-align: center;
-            }
-
-            .footer-inner {
-                max-width: 960px;
-                margin: 0 auto;
-            }
-
-            footer p {
-                font-size: 14px;
-                color: var(--text-dim);
-                margin-bottom: 8px;
-            }
-
-            footer a {
-                color: var(--accent);
-                text-decoration: none;
-            }
-
-            footer a:hover {
-                text-decoration: underline;
-            }
-
-            /* ─── Divider ─── */
-            .divider {
-                border: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.06);
-                margin: 0;
-            }
-
-            /* ─── RESPONSIVE ─── */
-            @media (max-width: 600px) {
-                .nav-links {
-                    display: none;
-                }
-
-                .hero {
-                    padding: 64px 20px 48px;
-                }
-
-                section {
-                    padding: 60px 20px;
-                }
-            }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>逢7过  SevenPass</title>
+  <meta name="description" content="逢7过  一款考验反应力与专注力的数字游戏。SevenPass  A reflex & focus number game." />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #1A1F2E; --surface: #252D42; --surface2: #293347;
+      --accent: #4099FF; --gold: #F0C040; --red: #E05252;
+      --text: #D9D9D9; --text-dim: #8892AA; --radius: 16px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif; line-height:1.6; }
+
+    /* NAV */
+    nav { position:sticky; top:0; background:rgba(26,31,46,0.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.06); z-index:100; padding:0 24px; }
+    .nav-inner { max-width:960px; margin:0 auto; height:56px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-logo { font-size:18px; font-weight:700; color:var(--text); text-decoration:none; }
+    .nav-logo span { color:var(--accent); }
+    .nav-links { display:flex; gap:24px; list-style:none; }
+    .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+
+    /* HERO */
+    .hero { text-align:center; padding:96px 24px 80px; }
+    .hero-badge { display:inline-block; background:rgba(64,153,255,0.12); color:var(--accent); border:1px solid rgba(64,153,255,0.3); border-radius:999px; padding:4px 14px; font-size:13px; margin-bottom:24px; }
+    .hero h1 { font-size:clamp(40px,8vw,72px); font-weight:800; letter-spacing:-0.02em; line-height:1.1; margin-bottom:12px; }
+    .hero h1 .zh { display:block; }
+    .hero h1 .en { display:block; font-size:clamp(20px,4vw,36px); font-weight:600; color:var(--text-dim); margin-top:8px; }
+    .hero-sub { font-size:18px; color:var(--text-dim); margin:20px auto 40px; max-width:480px; }
+    .hero-sub .en-sub { display:block; font-size:15px; margin-top:4px; }
+    .hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:14px 28px; border-radius:999px; font-size:16px; font-weight:600; text-decoration:none; transition:transform 0.15s,opacity 0.15s; cursor:pointer; border:none; }
+    .btn:hover { transform:translateY(-2px); opacity:0.9; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-outline { background:transparent; color:var(--text); border:1.5px solid rgba(255,255,255,0.2); }
+    .btn-outline:hover { border-color:rgba(255,255,255,0.5); }
+
+    /* NUMBERS ROW */
+    .numbers-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; padding:0 24px 80px; }
+    .num-chip { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; background:var(--surface); }
+    .num-chip.normal { color:var(--text); }
+    .num-chip.seven { background:rgba(240,192,64,0.15); color:var(--gold); border:1.5px solid rgba(240,192,64,0.4); }
+    .num-chip.pass { background:var(--accent); color:#fff; font-size:16px; }
+
+    /* SECTION */
+    section { padding:80px 24px; }
+    .section-inner { max-width:960px; margin:0 auto; }
+    .section-tag { font-size:13px; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px; }
+    .section-title { font-size:clamp(24px,4vw,36px); font-weight:700; margin-bottom:8px; }
+    .section-title .en { display:block; font-size:clamp(14px,2vw,18px); color:var(--text-dim); font-weight:400; margin-top:4px; }
+
+    /* RULES */
+    #rules { background:var(--surface); }
+    .rules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; margin-top:40px; }
+    .rule-card { background:var(--bg); border-radius:var(--radius); padding:24px; border:1px solid rgba(255,255,255,0.06); }
+    .rule-icon { font-size:32px; margin-bottom:12px; }
+    .rule-card h3 { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .rule-card .rule-en { font-size:13px; color:var(--accent); margin-bottom:8px; }
+    .rule-card p { font-size:14px; color:var(--text-dim); line-height:1.6; }
+
+    /* SCORING */
+    .scoring-list { display:flex; flex-direction:column; gap:12px; margin-top:32px; }
+    .score-item { display:flex; align-items:flex-start; gap:16px; background:var(--surface); border-radius:var(--radius); padding:16px 20px; border:1px solid rgba(255,255,255,0.06); }
+    .score-badge { min-width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; flex-shrink:0; }
+    .score-badge.normal { background:rgba(217,217,217,0.1); color:var(--text); }
+    .score-badge.bonus { background:rgba(240,192,64,0.15); color:var(--gold); }
+    .score-badge.wrong { background:rgba(224,82,82,0.15); color:var(--red); }
+    .score-content h4 { font-size:15px; font-weight:600; margin-bottom:2px; }
+    .score-content .en { font-size:13px; color:var(--accent); margin-bottom:4px; }
+    .score-content p { font-size:14px; color:var(--text-dim); }
+
+    /* SCREENSHOTS  horizontal scroll row */
+    .screenshots-grid { display:flex; flex-direction:row; gap:12px; margin-top:40px; overflow-x:auto; padding-bottom:8px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+    .screenshots-grid::-webkit-scrollbar { height:4px; }
+    .screenshots-grid::-webkit-scrollbar-track { background:transparent; }
+    .screenshots-grid::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+    .screenshot-frame { flex:0 0 auto; width:150px; border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); aspect-ratio:9/19; scroll-snap-align:start; background:var(--surface); }
+    .screenshot-frame img { width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* DOWNLOAD */
+    #download { background:var(--surface); }
+    .platforms { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:40px; }
+    .platform-card { background:var(--bg); border-radius:var(--radius); padding:28px 20px; border:1px solid rgba(255,255,255,0.08); text-align:center; transition:border-color 0.2s,transform 0.2s; }
+    .platform-card:hover { border-color:rgba(64,153,255,0.4); transform:translateY(-4px); }
+    .platform-card h3 { font-size:18px; font-weight:700; margin-bottom:4px; }
+    .platform-card .platform-en { font-size:13px; color:var(--text-dim); margin-bottom:20px; }
+    .platform-card .btn { font-size:15px; padding:12px 20px; width:100%; justify-content:center; margin-bottom:24px; }
+    .qr-wrap { display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .qr-wrap canvas, .qr-wrap img { border-radius:10px; background:#fff; padding:8px; }
+    .qr-label { font-size:12px; color:var(--text-dim); }
+
+    /* FOOTER */
+    footer { border-top:1px solid rgba(255,255,255,0.06); padding:40px 24px; text-align:center; }
+    .footer-inner { max-width:960px; margin:0 auto; }
+    footer p { font-size:14px; color:var(--text-dim); margin-bottom:8px; }
+    footer a { color:var(--accent); text-decoration:none; }
+    footer a:hover { text-decoration:underline; }
+
+    /* DIVIDER */
+    .divider { border:none; border-top:1px solid rgba(255,255,255,0.06); margin:0; }
+
+    /* RESPONSIVE */
+    @media (max-width:600px) {
+      .nav-links { display:none; }
+      .hero { padding:64px 20px 48px; }
+      section { padding:60px 20px; }
+      .platforms { gap:12px; }
+      .platform-card { padding:16px 12px; }
+      .screenshot-frame { width:120px; }
+    }
+  </style>
 </head>
-
 <body>
 
-    <!-- NAV -->
-    <nav>
-        <div class="nav-inner">
-            <a class="nav-logo" href="#">逢7过 <span>·</span> SevenPass</a>
-            <ul class="nav-links">
-                <li><a href="#rules">玩法 Rules</a></li>
-                <li><a href="#screenshots">截图 Screenshots</a></li>
-                <li><a href="#download">下载 Download</a></li>
-            </ul>
-        </div>
-    </nav>
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">逢7过 <span></span> SevenPass</a>
+    <ul class="nav-links">
+      <li><a href="#rules">玩法 Rules</a></li>
+      <li><a href="#screenshots">截图 Screenshots</a></li>
+      <li><a href="#download">下载 Download</a></li>
+    </ul>
+  </div>
+</nav>
 
-    <!-- HERO -->
-    <div class="hero">
-        <div class="hero-badge">🎮 数字反应挑战 · Number Reflex Challenge</div>
-        <h1>
-            <span class="zh">逢7过</span>
-            <span class="en">SevenPass</span>
-        </h1>
-        <p class="hero-sub">
-            能坚持多久？挑战你的反应极限。
-            <span class="en-sub">How long can you last? Push your reflex to the limit.</span>
-        </p>
-        <div class="hero-btns">
-            <a href="#download" class="btn btn-primary">⬇ 立即下载 Download</a>
-            <a href="#rules" class="btn btn-outline">📖 查看玩法 How to Play</a>
-        </div>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"> 数字反应挑战  Number Reflex Challenge</div>
+  <h1>
+    <span class="zh">逢7过</span>
+    <span class="en">SevenPass</span>
+  </h1>
+  <p class="hero-sub">
+    能坚持多久？挑战你的反应极限。
+    <span class="en-sub">How long can you last? Push your reflex to the limit.</span>
+  </p>
+  <div class="hero-btns">
+    <a href="#download" class="btn btn-primary"> 立即下载 Download</a>
+    <a href="#rules" class="btn btn-outline"> 查看玩法 How to Play</a>
+  </div>
+</div>
+
+<!-- NUMBERS SHOWCASE -->
+<div class="numbers-row">
+  <div class="num-chip normal">1</div>
+  <div class="num-chip normal">2</div>
+  <div class="num-chip normal">3</div>
+  <div class="num-chip normal">4</div>
+  <div class="num-chip normal">5</div>
+  <div class="num-chip normal">6</div>
+  <div class="num-chip seven pass">过!</div>
+  <div class="num-chip normal">8</div>
+  <div class="num-chip normal">9</div>
+  <div class="num-chip normal">10</div>
+  <div class="num-chip normal">11</div>
+  <div class="num-chip normal">12</div>
+  <div class="num-chip normal">13</div>
+  <div class="num-chip seven pass">过!</div>
+</div>
+
+<hr class="divider" />
+
+<!-- RULES -->
+<section id="rules">
+  <div class="section-inner">
+    <div class="section-tag">玩法说明  How to Play</div>
+    <h2 class="section-title">规则简单，考验却不简单<span class="en">Simple rules. Serious challenge.</span></h2>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="rule-icon"></div>
+        <h3>数字依次出现</h3>
+        <div class="rule-en">Numbers appear in sequence</div>
+        <p>屏幕上的数字从小到大依次出现，速度越来越快，留给你的反应时间越来越短。<br/>Numbers appear one by one, accelerating with every correct answer.</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon"></div>
+        <h3>三种操作</h3>
+        <div class="rule-en">Three choices</div>
+        <p>「<strong style="color:var(--text)">说</strong>」报出数字；「<strong style="color:var(--gold)">过</strong>」跳过；「<strong style="color:var(--accent)">拐</strong>」反转方向。<br/>&quot;Say&quot; the number, &quot;Pass&quot; to skip, &quot;Turn&quot; to reverse direction.</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon" style="color:var(--gold)">7</div>
+        <h3>遇7必过</h3>
+        <div class="rule-en">Pass or Turn on 7</div>
+        <p>凡含 <strong style="color:var(--gold)">7</strong>（7、17、27）或是 <strong style="color:var(--gold)">7 的倍数</strong>（14、21、28），必须说「过」或「拐」！<br/>Any number containing 7 or divisible by 7  say &quot;Pass&quot; or &quot;Turn&quot;!</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon"></div>
+        <h3>限时抢答</h3>
+        <div class="rule-en">Beat the timer</div>
+        <p>每个数字都有倒计时，超时或答错立刻结束。冲击你的最高分！<br/>Each number has a countdown. Time out or wrong answer = game over.</p>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- NUMBERS SHOWCASE -->
-    <div class="numbers-row">
-        <div class="num-chip normal">1</div>
-        <div class="num-chip normal">2</div>
-        <div class="num-chip normal">3</div>
-        <div class="num-chip normal">4</div>
-        <div class="num-chip normal">5</div>
-        <div class="num-chip normal">6</div>
-        <div class="num-chip seven pass">过!</div>
-        <div class="num-chip normal">8</div>
-        <div class="num-chip normal">9</div>
-        <div class="num-chip normal">10</div>
-        <div class="num-chip normal">11</div>
-        <div class="num-chip normal">12</div>
-        <div class="num-chip normal">13</div>
-        <div class="num-chip seven pass">过!</div>
+<hr class="divider" />
+
+<!-- SCORING -->
+<section id="scoring">
+  <div class="section-inner">
+    <div class="section-tag">计分规则  Scoring</div>
+    <h2 class="section-title">奖分、扣分一目了然<span class="en">Earn points, avoid penalties</span></h2>
+    <div class="scoring-list">
+      <div class="score-item">
+        <div class="score-badge normal"></div>
+        <div class="score-content">
+          <h4>普通答对  Correct Answer</h4>
+          <div class="en">Non-7 number judged correctly</div>
+          <p>正确报出数字或在普通数字上说「过」，获得基础分。</p>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="score-badge bonus">0</div>
+        <div class="score-content">
+          <h4> 彩蛋加分  Bonus Points</h4>
+          <div class="en">Bonus when the number is 0</div>
+          <p>轮到你时数字恰好为 <strong style="color:var(--gold)">0</strong>，你获得 +5 分；AI 遇到 0 则你扣 5 分。<br/>Your turn hits 0: +5 pts. AI hits 0: 5 pts.</p>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="score-badge wrong"></div>
+        <div class="score-content">
+          <h4>答错 / 超时  Wrong or Timeout</h4>
+          <div class="en">Incorrect answer or time's up</div>
+          <p>说错或未在时限内作答，游戏立即结束，查看本局得分与历史记录。</p>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <hr class="divider" />
+<hr class="divider" />
 
-    <!-- RULES -->
-    <section id="rules">
-        <div class="section-inner">
-            <div class="section-tag">玩法说明 · How to Play</div>
-            <h2 class="section-title">
-                规则简单，考验却不简单
-                <span class="en">Simple rules. Serious challenge.</span>
-            </h2>
+<!-- SCREENSHOTS -->
+<section id="screenshots">
+  <div class="section-inner">
+    <div class="section-tag">游戏截图  Screenshots</div>
+    <h2 class="section-title">简洁直觉的界面设计<span class="en">Clean, intuitive interface</span></h2>
+    <div class="screenshots-grid">
+      <div class="screenshot-frame"><img src="assets/screenshots/1.jpg" alt="Screenshot 1" /></div>
+      <div class="screenshot-frame"><img src="assets/screenshots/2.jpg" alt="Screenshot 2" /></div>
+      <div class="screenshot-frame"><img src="assets/screenshots/3.jpg" alt="Screenshot 3" /></div>
+      <div class="screenshot-frame"><img src="assets/screenshots/4.jpg" alt="Screenshot 4" /></div>
+      <div class="screenshot-frame"><img src="assets/screenshots/5.jpg" alt="Screenshot 5" /></div>
+      <div class="screenshot-frame"><img src="assets/screenshots/6.jpg" alt="Screenshot 6" /></div>
+    </div>
+  </div>
+</section>
 
-            <div class="rules-grid">
-                <div class="rule-card">
-                    <div class="rule-icon">🔢</div>
-                    <h3>数字依次出现</h3>
-                    <div class="rule-en">Numbers appear in sequence</div>
-                    <p>屏幕上的数字从小到大依次出现，速度越来越快，留给你的反应时间越来越短。<br />Numbers appear one by one, accelerating with every
-                        correct answer.</p>
-                </div>
-                <div class="rule-card">
-                    <div class="rule-icon">✋</div>
-                    <h3>两种操作</h3>
-                    <div class="rule-en">Two choices</div>
-                    <p>每个数字你只有两个选择：说出数字，或者说「<strong style="color:var(--gold)">过</strong>」。<br />For each number: say the
-                        number, or say <strong style="color:var(--gold)">"Pass"</strong>.</p>
-                </div>
-                <div class="rule-card">
-                    <div class="rule-icon" style="color:var(--gold)">7️⃣</div>
-                    <h3>遇7必过</h3>
-                    <div class="rule-en">Pass or Turn on 7</div>
-                    <p>凡是数字中包含 <strong style="color:var(--gold)">7</strong>（如 7、17、27…）或是 <strong
-                            style="color:var(--gold)">7 的倍数</strong>（如 7、14、21…），必须说「过」或「拐」！<br />Any number containing
-                        7 or
-                        divisible by 7 — say "Pass" or "Turn"!</p>
-                </div>
-                <div class="rule-card">
-                    <div class="rule-icon">⏱</div>
-                    <h3>限时抢答</h3>
-                    <div class="rule-en">Beat the timer</div>
-                    <p>每个数字都有倒计时，超时或答错立刻结束。冲击你的最高分！<br />Each number has a countdown. Time out or wrong answer = game
-                        over. Chase your best score!</p>
-                </div>
-            </div>
+<hr class="divider" />
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="section-inner">
+    <div class="section-tag">立即下载  Download</div>
+    <h2 class="section-title">iOS &amp; Android</h2>
+    <div class="platforms">
+      <!-- iOS -->
+      <div class="platform-card">
+        <h3>iPhone / iPad</h3>
+        <div class="platform-en">iOS  App Store</div>
+        <a id="ios-btn" href="#" class="btn btn-primary" target="_blank" rel="noopener"> App Store</a>
+        <div class="qr-wrap">
+          <canvas id="qr-ios"></canvas>
+          <span class="qr-label">扫码下载  Scan to download</span>
         </div>
-    </section>
-
-    <hr class="divider" />
-
-    <!-- SCORING -->
-    <section id="scoring">
-        <div class="section-inner">
-            <div class="section-tag">计分规则 · Scoring</div>
-            <h2 class="section-title">
-                奖分、扣分一目了然
-                <span class="en">Earn points, avoid penalties</span>
-            </h2>
-
-            <div class="scoring-list">
-                <div class="score-item">
-                    <div class="score-badge normal">✓</div>
-                    <div class="score-content">
-                        <h4>普通答对 · Correct Answer</h4>
-                        <div class="en">Non-7 number judged correctly</div>
-                        <p>说出正确数字或在普通数字上正确选「过」，获得基础分。</p>
-                    </div>
-                </div>
-                <div class="score-item">
-                    <div class="score-badge bonus">0</div>
-                    <div class="score-content">
-                        <h4>🌟 彩蛋加分 · Bonus Points</h4>
-                        <div class="en">Bonus when the number is 0</div>
-                        <p>轮到你时数字恰好为 <strong style="color:var(--gold)">0</strong>，你获得 +5 分；AI 遇到 0 则你扣 −5 分。<br />When
-                            the number hits 0 on your turn: +5 pts. AI hits 0: −5 pts.</p>
-                    </div>
-                </div>
-                <div class="score-item">
-                    <div class="score-badge wrong">✗</div>
-                    <div class="score-content">
-                        <h4>答错 / 超时 · Wrong or Timeout</h4>
-                        <div class="en">Incorrect answer or time's up</div>
-                        <p>说错或未在时限内作答，游戏立即结束，查看本局得分与历史记录。</p>
-                    </div>
-                </div>
-            </div>
+      </div>
+      <!-- Android -->
+      <div class="platform-card">
+        <h3>Android</h3>
+        <div class="platform-en">Android 8.0+ (APK)</div>
+        <a id="android-btn" href="#" class="btn btn-outline" target="_blank" rel="noopener"> 下载 APK</a>
+        <div class="qr-wrap">
+          <canvas id="qr-android"></canvas>
+          <span class="qr-label">扫码下载  Scan to download</span>
         </div>
-    </section>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:28px;font-size:13px;color:var(--text-dim);">
+      Android APK 侧载安装：设置  安全  允许安装未知来源  Sideload: Settings  Security  Unknown sources
+    </p>
+  </div>
+</section>
 
-    <hr class="divider" />
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <p><strong>逢7过  SevenPass</strong></p>
+    <p>
+      <a href="https://www.termsfeed.com/live/66aa185e-dbff-41ef-b3eb-ab26ee1ae7cf" target="_blank" rel="noopener">隐私政策 Privacy Policy</a>
+      &nbsp;&nbsp;
+      <a href="https://github.com/shuaihuadu/sevenpass" target="_blank" rel="noopener">GitHub</a>
+    </p>
+    <p style="margin-top:16px;"> 2026 SevenPass. All rights reserved.</p>
+  </div>
+</footer>
 
-    <!-- SCREENSHOTS -->
-    <section id="screenshots">
-        <div class="section-inner">
-            <div class="section-tag">游戏截图 · Screenshots</div>
-            <h2 class="section-title">
-                简洁直觉的界面设计
-                <span class="en">Clean, intuitive interface</span>
-            </h2>
+<script>
+  const IOS_URL     = "https://apps.apple.com/app/sevenpass/idXXXXXXXX"; // TODO: replace with real App Store URL
+  const ANDROID_URL = "https://github.com/shuaihuadu/sevenpass/releases/latest/download/sevenpass.apk";
 
-            <div class="screenshots-grid">
-                <div class="screenshot-frame"><img src="assets/screenshots/1.jpg" alt="Screenshot 1" /></div>
-                <div class="screenshot-frame"><img src="assets/screenshots/2.jpg" alt="Screenshot 2" /></div>
-                <div class="screenshot-frame"><img src="assets/screenshots/3.jpg" alt="Screenshot 3" /></div>
-                <div class="screenshot-frame"><img src="assets/screenshots/4.jpg" alt="Screenshot 4" /></div>
-                <div class="screenshot-frame"><img src="assets/screenshots/5.jpg" alt="Screenshot 5" /></div>
-                <div class="screenshot-frame"><img src="assets/screenshots/6.jpg" alt="Screenshot 6" /></div>
-            </div>
-        </div>
-    </section>
+  document.getElementById("ios-btn").href     = IOS_URL;
+  document.getElementById("android-btn").href = ANDROID_URL;
 
-    <hr class="divider" />
-
-    <!-- DOWNLOAD -->
-    <section id="download">
-        <div class="section-inner">
-            <div class="section-tag">立即下载 · Download</div>
-            <h2 class="section-title">
-                iOS &amp; Android
-            </h2>
-
-            <div class="platforms">
-
-                <!-- iOS -->
-                <div class="platform-card">
-                    <h3>iPhone / iPad</h3>
-                    <div class="platform-en">iOS · App Store</div>
-                    <a id="ios-btn" href="#" class="btn btn-primary" target="_blank" rel="noopener">
-                        ↗ App Store
-                    </a>
-                    <div class="qr-wrap">
-                        <canvas id="qr-ios"></canvas>
-                        <span class="qr-label">扫码下载 · Scan to download</span>
-                    </div>
-                </div>
-
-                <!-- Android -->
-                <div class="platform-card">
-                    <h3>Android</h3>
-                    <div class="platform-en">Android 8.0+ (APK)</div>
-                    <a id="android-btn" href="#" class="btn btn-outline" target="_blank" rel="noopener">
-                        ⬇ 下载 APK
-                    </a>
-                    <div class="qr-wrap">
-                        <canvas id="qr-android"></canvas>
-                        <span class="qr-label">扫码下载 · Scan to download</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <p style="text-align:center; margin-top:32px; font-size:13px; color:var(--text-dim);">
-                Android APK 侧载安装：设置 → 安全 → 允许安装未知来源 · Sideload: Settings → Security → Unknown sources
-            </p>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer>
-        <div class="footer-inner">
-            <p>
-                <strong>逢7过 · SevenPass</strong>
-            </p>
-            <p>
-                <a href="https://www.termsfeed.com/live/66aa185e-dbff-41ef-b3eb-ab26ee1ae7cf" target="_blank"
-                    rel="noopener">隐私政策 Privacy Policy</a>
-                &nbsp;·&nbsp;
-                <a href="https://github.com/shuaihuadu/sevenpass" target="_blank" rel="noopener">GitHub</a>
-            </p>
-            <p style="margin-top:16px;">
-                © 2025 SevenPass. All rights reserved.
-            </p>
-        </div>
-    </footer>
-
-    <script>
-        // ─────────────────────────────────────────────
-        //  UPDATE THESE TWO URLS when links are ready
-        // ─────────────────────────────────────────────
-        const IOS_URL = "https://apps.apple.com/app/sevenpass/idXXXXXXXX";  // TODO: replace with real App Store URL
-        const ANDROID_URL = "https://github.com/shuaihuadu/sevenpass/releases/latest/download/sevenpass.apk";
-
-        // Update button hrefs
-        document.getElementById("ios-btn").href = IOS_URL;
-        document.getElementById("android-btn").href = ANDROID_URL;
-
-        // Generate QR codes
-        QRCode.toCanvas(document.getElementById("qr-ios"), IOS_URL, {
-            width: 140,
-            margin: 1,
-            color: { dark: "#1A1F2E", light: "#FFFFFF" }
-        });
-
-        QRCode.toCanvas(document.getElementById("qr-android"), ANDROID_URL, {
-            width: 140,
-            margin: 1,
-            color: { dark: "#1A1F2E", light: "#FFFFFF" }
-        });
-    </script>
+  QRCode.toCanvas(document.getElementById("qr-ios"), IOS_URL, {
+    width: 140, margin: 1, color: { dark: "#1A1F2E", light: "#FFFFFF" }
+  });
+  QRCode.toCanvas(document.getElementById("qr-android"), ANDROID_URL, {
+    width: 140, margin: 1, color: { dark: "#1A1F2E", light: "#FFFFFF" }
+  });
+</script>
 
 </body>
-
 </html>
