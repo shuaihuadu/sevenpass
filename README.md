@@ -1,6 +1,8 @@
 # 逢7过 · SevenPass
 
-考验反应力与专注力的数字游戏，支持 iOS 与 Android。
+考验反应力与专注力的数字游戏，尤其适合喝多的时候玩。
+
+支持 iOS 与 Android。
 
 🌐 **官网** → [shuaihuadu.github.io/sevenpass](https://shuaihuadu.github.io/sevenpass)
 
@@ -22,4 +24,5 @@
 | ------- | -------------------------------------------------------------------------- |
 | iOS     | App Store（即将上线）                                                      |
 | Android | [GitHub Releases](https://github.com/shuaihuadu/sevenpass/releases/latest) |
+
 
