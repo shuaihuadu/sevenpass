@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>逢7过  SevenPass</title>
   <meta name="description" content="逢7过  一款考验反应力与专注力的数字游戏。SevenPass  A reflex & focus number game." />
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
   <style>
     :root {
       --bg: #1A1F2E; --surface: #252D42; --surface2: #293347;
@@ -268,7 +268,7 @@
         <div class="platform-en">iOS  App Store</div>
         <a id="ios-btn" href="#" class="btn btn-primary" target="_blank" rel="noopener"> App Store</a>
         <div class="qr-wrap">
-          <canvas id="qr-ios"></canvas>
+          <img src="assets/qr-ios.png" width="140" height="140" alt="iOS QR Code" />
           <span class="qr-label">扫码下载  Scan to download</span>
         </div>
       </div>
@@ -303,16 +303,11 @@
 </footer>
 
 <script>
-  const IOS_URL     = "https://apps.apple.com/app/sevenpass/idXXXXXXXX"; // TODO: replace with real App Store URL
+  const IOS_URL     = "https://apps.apple.com/app/sevenpass/id6759615645";
   const ANDROID_URL = "https://github.com/shuaihuadu/sevenpass/releases/latest/download/sevenpass.apk";
 
   document.getElementById("ios-btn").href     = IOS_URL;
   document.getElementById("android-btn").href = ANDROID_URL;
-
-  QRCode.toCanvas(document.getElementById("qr-ios"), IOS_URL, {
-    width: 140, margin: 1, color: { dark: "#1A1F2E", light: "#FFFFFF" }
-  });
-  // Android QR code: static image (assets/qr-android.png)
 </script>
 
 </body>
